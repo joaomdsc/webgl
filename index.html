@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- WebGL Fundamentals -->
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WebGL Fundamentals</title>
+    <link type="text/css" href="webgl-tutorials.css" rel="stylesheet">
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+
+    <script id="vertex-shader-2d" type="notjs">
+      // An attribute will receive data from a buffer
+      attribute vec4 a_pos;
+
+      // All shaders have a main function
+      void main() {
+	  // gl_Position is a special variable a vertex shader is responsible for
+	  // setting
+	  gl_Position = a_pos;
+      }
+    </script>
+    <script id="fragment-shader-2d" type="notjs">
+      // Fragment shaders don't have a defaut precision, so we need to pick
+      // one. medium is a good default.
+      precision mediump float;
+
+      void main() {
+	  // gl_FragColor is a special variable a fragment shader is responsible for
+	  // setting
+	  gl_FragColor = vec4(1, 0, 0.5, 1); // return reddsih-purple
+      }
+    </script>
+    <script src="webgl-utils.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
+
+<!-- For most samples webgl-utils only provides shader compiling/linking and
+canvas resizing because why clutter the examples with code that's the same in
+every sample.  See
+https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html and
+https://webglfundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html for
+webgl-utils, m3, m4, and webgl-lessons-ui.
+-->
