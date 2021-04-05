@@ -10,28 +10,6 @@
   <body>
     <canvas id="c"></canvas>
 
-    <script id="vertex-shader-2d" type="notjs">
-      // An attribute will receive data from a buffer
-      attribute vec4 a_pos;
-
-      // All shaders have a main function
-      void main() {
-	  // gl_Position is a special variable a vertex shader is responsible for
-	  // setting
-	  gl_Position = a_pos;
-      }
-    </script>
-    <script id="fragment-shader-2d" type="notjs">
-      // Fragment shaders don't have a defaut precision, so we need to pick
-      // one. medium is a good default.
-      precision mediump float;
-
-      void main() {
-	  // gl_FragColor is a special variable a fragment shader is responsible for
-	  // setting
-	  gl_FragColor = vec4(1, 0, 0.5, 1); // return reddsih-purple
-      }
-    </script>
     <script src="webgl-utils.js"></script>
     <script src="main.js"></script>
   </body>

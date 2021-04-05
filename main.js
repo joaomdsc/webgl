@@ -1,14 +1,36 @@
+// Vertex shader GLSL code
+let vertex_shader_2d = `
+    // An attribute will receive data from a buffer
+    attribute vec4 a_pos;
+    
+    // All shaders have a main function
+    void main() {
+    	  // gl_Position is a special variable a vertex shader is responsible for
+    	  // setting
+    	  gl_Position = a_pos;
+    }
+`
+// Fragment shader GLSL code
+let fragment_shader_2d = `
+    // Fragment shaders don't have a defaut precision, so we need to pick
+    // one. medium is a good default.
+    precision mediump float;
+    
+    void main() {
+    	  // gl_FragColor is a special variable a fragment shader is responsible for
+    	  // setting
+    	  gl_FragColor = vec4(1, 0, 0.5, 1); // return reddsih-purple
+    }
+`
 // Create a shader, upload the GLSL source, and compile the source
-function createShader(gl, type, id) {
+function createShader(gl, type, src) {
     let sh = gl.createShader(type)
-    let src = document.querySelector(id).text
     gl.shaderSource(sh, src)
     gl.compileShader(sh)
     let success = gl.getShaderParameter(sh, gl.COMPILE_STATUS)
     if(success) {
         return sh
     }
-
     console.log(gl.getShaderInfoLog(sh))
     gl.deleteShader(sh)
 }
@@ -23,7 +45,6 @@ function createProgram(gl, vsh, fsh) {
     if(success) {
         return p
     }
-
     console.log(gl.getProgramInfoLog(p))
     gl.deleteProgram(p)
 }
@@ -41,8 +62,8 @@ function main() {
     }
 
     // Call our function to create shaders and link them into a program
-    let vsh = createShader(gl, gl.VERTEX_SHADER, "#vertex-shader-2d")
-    let fsh = createShader(gl, gl.FRAGMENT_SHADER, "#fragment-shader-2d")
+    let vsh = createShader(gl, gl.VERTEX_SHADER, vertex_shader_2d)
+    let fsh = createShader(gl, gl.FRAGMENT_SHADER, fragment_shader_2d)
     let p = createProgram(gl, vsh, fsh)
 
     // Look up the location of the attribute
@@ -86,8 +107,10 @@ function main() {
 
     // Specify how to pull the data out:
 
-    // Bind the position buffer (again)
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+    // // FIXME binding here is redundant, but what if rendering was separated
+    // from initializing ?
+    // // Bind the position buffer (again)
+    // gl.bindBuffer(gl.ARRAY_BUFFER, buf)
 
     // Tell the attribute how to get data out of buf (ARRAY_BUFFER)
     let size = 2          // 2 components per iteration
@@ -96,15 +119,13 @@ function main() {
     let stride = 0        // 0 = move forward size * sizeof(type) each iteration to get the next position
     let offset = 0        // start at the beginning of the buffer
 
-    // A hiddent part of gl.vertexAttribPointer is that it binds the current
+    // A hidden part of gl.vertexAttribPointer is that it binds the current
     // ARRAY_BUFFER to the attribute.
     gl.vertexAttribPointer(loc, size, type, normalize, stride, offset)
 
     // We can finally ask WebGL to execute our GLSL program and draw
-    let ptype = gl.TRIANGLES
-    offset = 0
     let count = 3
-    gl.drawArrays(ptype, offset, count)
+    gl.drawArrays(gl.TRIANGLES, offset, count)
 }
 
 main()
