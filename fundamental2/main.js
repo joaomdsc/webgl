@@ -1,26 +1,35 @@
 // Vertex shader GLSL code
 let vertex_shader_2d = `
-    // An attribute will receive data from a buffer
-    attribute vec4 a_pos;
+// An attribute will receive data from a buffer
+attribute vec2 a_pos;
+
+uniform vec2 u_resolution;
+
+// All shaders have a main function
+void main() {
+    // Convert the position from pixels to 0.0 to 1.0
+    vec2 zero2one = a_pos / u_resolution;
+
+    // Convert from 0->1 to 0->2
+    vec2 zero2two = zero2one*2.0;
+
+    // Convert from 0->2 to -1->+1 (clip space)
+    vec2 clipspace = zero2two - 1.0;
     
-    // All shaders have a main function
-    void main() {
-    	  // gl_Position is a special variable a vertex shader is responsible for
-    	  // setting
-    	  gl_Position = a_pos;
-    }
+    gl_Position = vec4(clipspace, 0, 1);
+}
 `
 // Fragment shader GLSL code
 let fragment_shader_2d = `
-    // Fragment shaders don't have a defaut precision, so we need to pick
-    // one. medium is a good default.
-    precision mediump float;
+// Fragment shaders don't have a defaut precision, so we need to pick
+// one. medium is a good default.
+precision mediump float;
     
-    void main() {
-    	  // gl_FragColor is a special variable a fragment shader is responsible for
-    	  // setting
-    	  gl_FragColor = vec4(1, 0, 0.5, 1); // return reddsih-purple
-    }
+void main() {
+    // gl_FragColor is a special variable a fragment shader is responsible for
+    // setting
+    gl_FragColor = vec4(1, 0, 0.5, 1); // return reddsih-purple
+}
 `
 // Create a shader, upload the GLSL source, and compile the source
 function createShader(gl, type, src) {
@@ -36,7 +45,9 @@ function createShader(gl, type, src) {
 }
 
 // Link two shaders into a program
-function createProgram(gl, vsh, fsh) {
+function createProgram(gl, vsh_src, fsh_src) {
+    let vsh = createShader(gl, gl.VERTEX_SHADER, vsh_src)
+    let fsh = createShader(gl, gl.FRAGMENT_SHADER, fsh_src)
     let p = gl.createProgram()
     gl.attachShader(p, vsh)
     gl.attachShader(p, fsh)
@@ -62,22 +73,26 @@ function main() {
     }
 
     // Call our function to create shaders and link them into a program
-    let vsh = createShader(gl, gl.VERTEX_SHADER, vertex_shader_2d)
-    let fsh = createShader(gl, gl.FRAGMENT_SHADER, fragment_shader_2d)
-    let p = createProgram(gl, vsh, fsh)
+    let p = createProgram(gl, vertex_shader_2d, fragment_shader_2d)
 
     // Look up the location of the attribute
-    let loc = gl.getAttribLocation(p, "a_pos")
+    let a_loc = gl.getAttribLocation(p, "a_pos")
+
+    // Look up the location of the uniform
+    let u_loc = gl.getUniformLocation(p, "u_resolution")
 
     // Create a buffer, and bind it (think ARRAY_BUFFER = buf)
     let buf = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buf)
     
-    // Put data (three 2d points) into the buffer
+    // Put data (six 2d points) into the buffer
     let positions = [
-        0, 0,
-        0, 0.5,
-        0.7, 0,
+        10, 20,
+        80, 20,
+        10, 30,
+        10, 30,
+        80, 20,
+        80, 30,
     ]
     // Transform the JavaScript array into strongly typed data
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
@@ -103,7 +118,7 @@ function main() {
     // it to the attribute in the shader.
 
     // First we need to turn the attribute on:
-    gl.enableVertexAttribArray(loc)
+    gl.enableVertexAttribArray(a_loc)
 
     // Specify how to pull the data out:
 
@@ -121,10 +136,14 @@ function main() {
 
     // A hidden part of gl.vertexAttribPointer is that it binds the current
     // ARRAY_BUFFER to the attribute.
-    gl.vertexAttribPointer(loc, size, type, normalize, stride, offset)
+    gl.vertexAttribPointer(a_loc, size, type, normalize, stride, offset)
 
+    // Set the resolution. A uniform is kind of a global variable, and the
+    // uniform2f function sets a value for it, as a couple of lfoats.
+    gl.uniform2f(u_loc, gl.canvas.width, gl.canvas.height)
+    
     // We can finally ask WebGL to execute our GLSL program and draw
-    let count = 3
+    let count = 6
     gl.drawArrays(gl.TRIANGLES, offset, count)
 }
 
